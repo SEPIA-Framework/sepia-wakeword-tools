@@ -14,13 +14,16 @@ Requirements:
 Clone this folder to your hard-drive and make sure your SEPIA server is running.
 
 Open the folder and setup your SEPIA server and account first:
-`python sepia\account.py --id=[sepia-user-id] --host=[sepia-server-url]`
-e.g.:
-`python sepia\account.py --id=uid1007 --host=my-sepia.example.com:20726/sepia` (Note the windows syntax '/')
+
+`python sepia\account.py --id=[sepia-user-id] --host=[sepia-server-url]` , e.g.:
+
+`python sepia\account.py --id=uid1007 --host=my-sepia.example.com:20726/sepia` (Note the windows syntax: 'sepia\...')
+
 You should see a confirmation that everything is ok.
 
 Run the wake-word engine:
-`python porcupine_sepia_remote.py --user_id=uid1007`
+
+`python porcupine_sepia_remote.py --user_id=uid1007` (this will use the default Windows 'hey SEPIA' keyword, use -h for help)
 
 Open your SEPIA client (Android app, browser, iOS, whatever uses the SEPIA WebSocket server for communication) and login with the same user you have just registered.
 Say 'Hey SEPIA' and watch what happens :-) (the microphone in your app switches on ... hopefully).
