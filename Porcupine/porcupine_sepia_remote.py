@@ -19,6 +19,7 @@ import os
 import platform
 import struct
 import sys
+import time
 from datetime import datetime
 from threading import Thread
 
@@ -28,10 +29,9 @@ import soundfile
 
 import requests
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'porcupine/binding/python/'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'sepia/'))
-
 import sepia.remote
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'porcupine/binding/python/'))
 from porcupine import Porcupine
 
 
@@ -82,7 +82,8 @@ class SepiaPorcupineRemote(Thread):
             self._recorded_frames = []
 
         # SEPIA setup
-        self.sepia_remote = sepia.remote.Remote(user_id = "uid1007")
+        self.state = 0  # 0: inactive, 1: listening, 2: waiting
+        self.sepia_remote = sepia.remote.Remote(user_id = user_id)
 
     def run(self):
         """
@@ -90,8 +91,28 @@ class SepiaPorcupineRemote(Thread):
          stream for occurrences of the wake word(s). It prints the time of detection for each occurrence and index of
          wake word and calls the SEPIA server for remote action 'trigger microphone'.
          """
-
         num_keywords = len(self._keyword_file_paths)
+        self.state = 0   
+		
+        def _audio_callback(in_data, frame_count, time_info, status):
+            if frame_count >= porcupine.frame_length:
+                pcm = struct.unpack_from("h" * porcupine.frame_length, in_data)
+                result = porcupine.process(pcm)
+                if self.state == 1:
+                    if num_keywords == 1 and result:
+                        print('[%s] detected keyword' % str(datetime.now()))
+                        self.state = 2
+                        if self.sepia_remote.trigger_microphone():
+                            print('SEPIA remote: triggered microphone')
+                        else:
+                            print('SEPIA remote: trigger failed')
+                        time.sleep(3)
+                        self.sepia_remote.set_state(self.sepia_remote.IDLE)
+                        self.state = 1
+                    elif num_keywords > 1 and result >= 0:
+                        print('[%s] detected keyword #%d' % (str(datetime.now()), result))
+            
+            return (None, pyaudio.paContinue)
 
         porcupine = None
         pa = None
@@ -107,9 +128,8 @@ class SepiaPorcupineRemote(Thread):
             sample_rate = porcupine.sample_rate
             num_channels = 1
             audio_format = pyaudio.paInt16
-            # frame_length = 4096
-            if self.frame_length == 0:
-                frame_length = porcupine.frame_length
+            if not self.frame_length:
+                frame_length = porcupine.frame_length   # frame_length = 4096
             else:
                 frame_length = self.frame_length
             audio_stream = pa.open(
@@ -118,9 +138,12 @@ class SepiaPorcupineRemote(Thread):
                 format=audio_format,
                 input=True,
                 frames_per_buffer=frame_length,
-                input_device_index=self._input_device_index
-            )
-            
+                input_device_index=self._input_device_index,
+				stream_callback=_audio_callback)
+
+            audio_stream.start_stream()
+            self.state = 1
+
             print("Started porcupine with following settings:")
             if self._input_device_index:
                 print("Input device: %d (check with --show_audio_devices_info)" % self._input_device_index)
@@ -134,18 +157,7 @@ class SepiaPorcupineRemote(Thread):
             print("Waiting for keywords ...\n")
 
             while True:
-                pcm = audio_stream.read(frame_length)
-                pcm = struct.unpack_from("h" * frame_length, pcm)
-
-                if self._output_path is not None:
-                    self._recorded_frames.append(pcm)
-
-                result = porcupine.process(pcm)
-                if num_keywords == 1 and result:
-                    print('[%s] detected keyword' % str(datetime.now()))
-                    self.sepia_remote.trigger_microphone()
-                elif num_keywords > 1 and result >= 0:
-                    print('[%s] detected keyword #%d' % (str(datetime.now()), result))
+                time.sleep(0.1)
 
         except KeyboardInterrupt:
             print('stopping ...')
@@ -154,6 +166,7 @@ class SepiaPorcupineRemote(Thread):
                 porcupine.delete()
 
             if audio_stream is not None:
+                audio_stream.stop_stream()
                 audio_stream.close()
 
             if pa is not None:
@@ -187,7 +200,7 @@ def _default_library_path():
         if machine == 'x86_64' or machine == 'i386':
             return os.path.join(os.path.dirname(__file__), 'porcupine/lib/linux/%s/libpv_porcupine.so' % machine)
         else:
-            raise Exception('Cannot autodetect library. Please use e.g.: --library_path="porcupine/lib/raspberry-pi/arm11/libpv_porcupine.so (Pi Zero with ARM11 CPU).')
+            raise Exception('Cannot autodetect library. Please use e.g.: --library_path="porcupine/lib/raspberry-pi/arm11/libpv_porcupine.so" (Pi Zero with ARM11 CPU).')
     elif system == 'Windows':
         if platform.architecture()[0] == '32bit':
             return os.path.join(os.path.dirname(__file__), 'porcupine\\lib\\windows\\i686\\libpv_porcupine.dll')
@@ -200,7 +213,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--keyword_file_paths', help='Comma-separated absolute paths to keyword files. Default is "hey_sepia_windows.ppn".', 
         type=str, default='porcupine/keyword_files/hey_sepia_windows.ppn')
-    parser.add_argument('--library_path', help='Path to Porcupine library, e.g.: --library_path="porcupine/lib/raspberry-pi/arm11/libpv_porcupine.so (Pi Zero with ARM11 CPU).',
+    parser.add_argument('--library_path', help='Path to Porcupine library, e.g.: --library_path="porcupine/lib/raspberry-pi/arm11/libpv_porcupine.so" (Pi Zero with ARM11 CPU).',
         type=str)
     parser.add_argument('--model_file_path', help='Path to model parameter file.',
         type=str, default=os.path.join(os.path.dirname(__file__), 'porcupine/lib/common/porcupine_params.pv'))

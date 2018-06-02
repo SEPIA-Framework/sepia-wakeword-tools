@@ -9,7 +9,7 @@ import json
 import getpass
 import argparse
 
-from storage import Storage
+from .storage import Storage
 
 class Account():
     """
@@ -55,9 +55,12 @@ class Account():
             'Content-Type': "application/json"
         }
         response = requests.request("POST", url, json=payload, headers=headers)
-        res = json.loads(response.text)
+        try:
+            res = json.loads(response.text)
+        except NameError:
+            res = None
 
-        if res["result"] and res["result"] == "success":
+        if res and res["result"] and res["result"] == "success":
             # store result - overwrite any previous entries with same user ID
             self.storage.write_user_data(self.user_id, {
                 "language" : res["user_lang_code"],
@@ -92,7 +95,10 @@ class Account():
             'Content-Type': "application/json"
         }
         response = requests.request("POST", url, json=payload, headers=headers)
-        res = json.loads(response.text)
+        try:
+            res = json.loads(response.text)
+        except NameError:
+            res = None
 
         if res["result"] and res["result"] == "success":
             name = res["user_name"]["nick"] or res["user_name"]["first"]

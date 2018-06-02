@@ -4,11 +4,18 @@
 #
 
 import sys
+import os
 import requests
 import json
 import argparse
 
-from storage import Storage
+from .storage import Storage
+
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), '/../respeaker/'))
+    import respeaker.pixels
+except ImportError:
+    print("SEPIA remote: no LED support")
 
 class Remote():
     """
@@ -46,7 +53,32 @@ class Remote():
             sys.exit("No user data found! Please generate a token first.")
         if not "language" in self.user_data:
             self.user_data["language"] = "en"
+
+        self.state = "idle"
+        try:
+            self.led = respeaker.pixels.Pixels()
+        except NameError:
+            self.led = None
         
+    SENDING = "sending"
+    IDLE = "idle"
+    RECEIVED_SUCCESS = "received_success"
+    RECEIVED_FAIL = "received_fail"
+
+    def set_state(self, state_name):
+        self.state = state_name
+        if self.led:
+            if self.state == Remote.IDLE:
+                self.led.off()
+            elif self.state == Remote.SENDING:
+                self.led.think()
+            elif self.state == Remote.RECEIVED_SUCCESS:
+                self.led.listen()
+            elif self.state == Remote.RECEIVED_FAIL:
+                self.led.speak()
+            else:
+                self.led.off()
+
 
     def send_action(self, action_type, action, device="", channel=""):
         """
@@ -64,8 +96,20 @@ class Remote():
         headers = {
             'Content-Type': "application/x-www-form-urlencoded"
         }
+        self.set_state(Remote.SENDING)
         response = requests.request("POST", url, data=payload, headers=headers)
-        print(response.text)    # DEBUG
+        # print(response.text)    # DEBUG
+        try:
+            res = json.loads(response.text)
+        except NameError:
+            res = None
+        if res and res["result"] and res["result"] == "success":
+            self.set_state(Remote.RECEIVED_SUCCESS)
+            return True
+        else:
+            print("SEPIA remote msg: " + response.text)
+            self.set_state(Remote.RECEIVED_FAIL)
+            return False
 
     def trigger_microphone(self, language="", device="", channel=""):
         """
@@ -76,7 +120,7 @@ class Remote():
             "key": "F4", 
             "language": (language or self.user_data["language"])
         }
-        self.send_action(action_type, json.dumps(action), device, channel)  # note: we convert action to string
+        return self.send_action(action_type, json.dumps(action), device, channel)  # note: we convert action to string
 
 
 if __name__ == '__main__':
