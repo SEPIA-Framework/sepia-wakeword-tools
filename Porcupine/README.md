@@ -6,7 +6,7 @@ It runs on x86 Linux, Windows and Mac with the custom keyword "Hey SEPIA" and on
 
 Requirements:
 * Python (and python-dev I think)
-* A couple of Python packages: pyaudio, numpy, enum34, soundfile, spidev, requests
+* A couple of Python packages: pyaudio, numpy, enum34, soundfile, spidev (for LED support), requests
 * A running SEPIA server
 * A microphone, properly installed
 * Detailed description coming soon ...
