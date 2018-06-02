@@ -15,9 +15,9 @@ Clone this folder to your hard-drive and make sure your SEPIA server is running.
 
 Open the folder and setup your SEPIA server and account first:
 
-`python sepia\account.py --id=[sepia-user-id] --host=[sepia-server-url]` , e.g.:
+`python -m sepia.account --id=[sepia-user-id] --host=[sepia-server-url]` , e.g.:
 
-`python sepia\account.py --id=uid1007 --host=my-sepia.example.com:20726/sepia` (Note the windows syntax: 'sepia\...')
+`python -m sepia.account --id=uid1007 --host=my-sepia.example.com:20726/sepia` (Note the windows syntax: 'sepia\...')
 
 You should see a confirmation that everything is ok.
 

@@ -93,6 +93,7 @@ class SepiaPorcupineRemote(Thread):
          """
         num_keywords = len(self._keyword_file_paths)
         self.state = 0   
+        self.sepia_remote.set_state(self.sepia_remote.LOADING)
 		
         def _audio_callback(in_data, frame_count, time_info, status):
             if frame_count >= porcupine.frame_length:
@@ -106,7 +107,7 @@ class SepiaPorcupineRemote(Thread):
                             print('SEPIA remote: triggered microphone')
                         else:
                             print('SEPIA remote: trigger failed')
-                        time.sleep(3)
+                        time.sleep(2)
                         self.sepia_remote.set_state(self.sepia_remote.IDLE)
                         self.state = 1
                     elif num_keywords > 1 and result >= 0:
@@ -144,7 +145,7 @@ class SepiaPorcupineRemote(Thread):
             audio_stream.start_stream()
             self.state = 1
 
-            print("Started porcupine with following settings:")
+            print("\nStarted porcupine with following settings:")
             if self._input_device_index:
                 print("Input device: %d (check with --show_audio_devices_info)" % self._input_device_index)
             else:
@@ -155,19 +156,21 @@ class SepiaPorcupineRemote(Thread):
             print("Frame-length: %d" % frame_length)
             print("Keyword file(s): %s" % self._keyword_file_paths)
             print("Waiting for keywords ...\n")
+            
+            self.sepia_remote.set_state(self.sepia_remote.IDLE)
 
             while True:
                 time.sleep(0.1)
 
         except KeyboardInterrupt:
-            print('stopping ...')
+            print('\nstopping ...')
         finally:
-            if porcupine is not None:
-                porcupine.delete()
-
             if audio_stream is not None:
                 audio_stream.stop_stream()
                 audio_stream.close()
+
+            if porcupine is not None:
+                porcupine.delete()
 
             if pa is not None:
                 pa.terminate()

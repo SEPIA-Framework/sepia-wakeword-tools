@@ -9,7 +9,10 @@ import json
 import getpass
 import argparse
 
-from .storage import Storage
+try:
+    from .storage import Storage
+except ValueError:
+    raise ValueError("Please use 'python -m sepia.account' (from outside the 'account.py' folder) to start the main function of this module.")
 
 class Account():
     """
@@ -67,12 +70,12 @@ class Account():
                 "token" : res["keyToken"]
             })
             name = res["user_name"]["nick"] or res["user_name"]["first"]
-            print("Success - " + name + ", your login token has been stored. Hf :-)")
+            print("SEPIA account: Success - " + name + ", your login token has been stored. Hf :-)")
             # store default host
             self.storage.write_default_host(self.host_address)
-            print("Set (new) default host: " + self.host_address)
+            print("SEPIA account: Set (new) default host: " + self.host_address)
         else:
-            print("Failed - I think the password is wrong or we got connection problems.")
+            print("SEPIA account: Failed - I think the password is wrong or we got connection problems.")
 
     def check_login(self):
         """
@@ -81,7 +84,7 @@ class Account():
         # read token first
         user_data = self.storage.get_user_data(self.user_id)
         if not "token" in user_data:
-            sys.exit("No user data found! Please generate a token first.")
+            sys.exit("SEPIA account: No user data found! Please generate a token first (python -m sepia.account --id=[sepia-user-id] --host=[sepia-server-url]).")
 
         # check token
         token = user_data["token"]
@@ -102,9 +105,9 @@ class Account():
 
         if res["result"] and res["result"] == "success":
             name = res["user_name"]["nick"] or res["user_name"]["first"]
-            print("Success - Wb " + name + ", your login token is still valid.")
+            print("SEPIA account: Success - Wb " + name + ", your login token is still valid.")
         else:
-            print("Failed - I think the token is invalid or we got connection problems.")
+            print("SEPIA account: Failed - I think the token is invalid or we got connection problems.")
 
 
 if __name__ == '__main__':

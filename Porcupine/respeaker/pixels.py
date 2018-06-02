@@ -2,7 +2,10 @@
 LED light pattern like Google Home
 """
 
-from . import apa102
+try:
+    from . import apa102
+except ValueError:
+    raise ValueError("Please use 'python -m respeaker.pixels' (from outside the 'pixels.py' folder) to start the main function of this module.")
 import time
 import threading
 try:

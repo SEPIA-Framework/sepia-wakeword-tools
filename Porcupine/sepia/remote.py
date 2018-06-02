@@ -9,13 +9,16 @@ import requests
 import json
 import argparse
 
-from .storage import Storage
+try:
+    from .storage import Storage
+except ValueError:
+    raise ValueError("Please use 'python -m sepia.remote' (from outside the 'renote.py' folder) to start the main function of this module.")
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '/../respeaker/'))
     import respeaker.pixels
 except ImportError:
-    print("SEPIA remote: no LED support")
+    print("SEPIA remote: No LED supported.")
 
 class Remote():
     """
@@ -50,7 +53,7 @@ class Remote():
         self.user_id = user_id
         self.user_data = self.storage.get_user_data(self.user_id)
         if not "token" in self.user_data:
-            sys.exit("No user data found! Please generate a token first.")
+            sys.exit("SEPIA remote: No user data found! Please generate a token first (python -m sepia.account --id=[sepia-user-id] --host=[sepia-server-url]).")
         if not "language" in self.user_data:
             self.user_data["language"] = "en"
 
@@ -61,6 +64,7 @@ class Remote():
             self.led = None
         
     SENDING = "sending"
+    LOADING = "loading"
     IDLE = "idle"
     RECEIVED_SUCCESS = "received_success"
     RECEIVED_FAIL = "received_fail"
@@ -70,6 +74,9 @@ class Remote():
         if self.led:
             if self.state == Remote.IDLE:
                 self.led.off()
+            elif self.state == Remote.LOADING:
+                self.led.wakeup()
+                self.led.speak()
             elif self.state == Remote.SENDING:
                 self.led.think()
             elif self.state == Remote.RECEIVED_SUCCESS:
@@ -78,6 +85,7 @@ class Remote():
                 self.led.speak()
             else:
                 self.led.off()
+        # print(self.state)
 
 
     def send_action(self, action_type, action, device="", channel=""):
