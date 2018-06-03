@@ -27,3 +27,8 @@ Run the wake-word engine:
 
 Open your SEPIA client (Android app, browser, iOS, whatever uses the SEPIA WebSocket server for communication) and login with the same user you have just registered.
 Say 'Hey SEPIA' and watch what happens :-) (the microphone in your app switches on ... hopefully).
+
+## ReSpeaker 2-Mic-HAT on Raspberry Pi Zero
+Examples for reboot cron-jobs:
+`@reboot sleep 15 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_respeaker_button.sh`
+`@reboot sleep 20 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_zero_wakeword.sh`

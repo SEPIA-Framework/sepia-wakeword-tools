@@ -54,7 +54,6 @@ class SepiaPorcupineRemote(Thread):
             output_path=None,
             frame_length=0      # 0=auto
         ): 
-
         """
         Constructor.
 

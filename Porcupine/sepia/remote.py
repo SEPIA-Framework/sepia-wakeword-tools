@@ -66,6 +66,7 @@ class Remote():
     SENDING = "sending"
     LOADING = "loading"
     IDLE = "idle"
+    SHUTTING_DOWN = "shutting_down"
     RECEIVED_SUCCESS = "received_success"
     RECEIVED_FAIL = "received_fail"
 
@@ -82,6 +83,9 @@ class Remote():
             elif self.state == Remote.RECEIVED_SUCCESS:
                 self.led.listen()
             elif self.state == Remote.RECEIVED_FAIL:
+                self.led.speak()
+            elif self.state == Remote.SHUTTING_DOWN:
+                self.led.wakeup()
                 self.led.speak()
             else:
                 self.led.off()
