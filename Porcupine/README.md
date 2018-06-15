@@ -1,4 +1,5 @@
 # Porcupine implementation for SEPIA wake-word trigger
+
 This implementation uses the Porcupine wake-word (hotword, keyword) tool by [Picovoice](https://picovoice.ai/) to trigger SEPIA via the remote-actions endpoint.
 It runs on x86 Linux, Windows and Mac with the custom keyword "Hey SEPIA" and on ARM Linux (Raspberry Pi) with the keywords included in the open-source package of Porcupine (e.g. "raspberry" or "grashopper" ^^).
 
@@ -30,5 +31,5 @@ Say 'Hey SEPIA' and watch what happens :-) (the microphone in your app switches 
 
 ## ReSpeaker 2-Mic-HAT on Raspberry Pi Zero
 Examples for reboot cron-jobs:
-`@reboot sleep 15 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_respeaker_button.sh`
-`@reboot sleep 20 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_zero_wakeword.sh`
+`@reboot sleep 30 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_respeaker_button.sh`
+`@reboot sleep 30 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_zero_wakeword.sh`
