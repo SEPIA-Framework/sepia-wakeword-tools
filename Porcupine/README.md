@@ -30,6 +30,7 @@ Open your SEPIA client (Android app, browser, iOS, whatever uses the SEPIA WebSo
 Say 'Hey SEPIA' and watch what happens :-) (the microphone in your app switches on ... hopefully).
 
 ## ReSpeaker 2-Mic-HAT on Raspberry Pi Zero
-Examples for reboot cron-jobs:
-`@reboot sleep 30 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_respeaker_button.sh`
-`@reboot sleep 30 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_zero_wakeword.sh`
+Examples for reboot cron-jobs:  
+`@reboot sleep 45 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_respeaker_button.sh`  
+`@reboot sleep 60 && cd /home/pi/SEPIA/Porcupine && sh run_sepia_pi_zero_wakeword.sh`  
+
