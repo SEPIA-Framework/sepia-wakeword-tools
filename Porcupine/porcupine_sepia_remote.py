@@ -102,7 +102,7 @@ class SepiaPorcupineRemote(Thread):
                     if num_keywords == 1 and result:
                         print('[%s] detected keyword' % str(datetime.now()))
                         self.state = 2
-                        if self.sepia_remote.trigger_microphone():
+                        if self.sepia_remote.trigger_microphone(): 	# TODO: optionally add device and channel ID here
                             print('SEPIA remote: triggered microphone')
                         else:
                             print('SEPIA remote: trigger failed')
@@ -168,11 +168,11 @@ class SepiaPorcupineRemote(Thread):
                 audio_stream.stop_stream()
                 audio_stream.close()
 
-            if porcupine is not None:
-                porcupine.delete()
-
             if pa is not None:
                 pa.terminate()
+				
+            if porcupine is not None:
+                porcupine.delete()
 
             if self._output_path is not None and len(self._recorded_frames) > 0:
                 recorded_audio = np.concatenate(self._recorded_frames, axis=0).astype(np.int16)
