@@ -101,8 +101,8 @@ class Remote():
             'type' : action_type,
             'action' : action,
             'client' : self.client_info,
-            'channelId' : channel,
-            'deviceId' : device,
+            'targetChannelId' : channel,
+            'targetDeviceId' : device,
             'KEY' : (self.user_id + ";" + self.user_data["token"])
         }
         headers = {
